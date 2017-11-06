@@ -1,7 +1,7 @@
 package parser
 
 import (
-	//	"fmt"
+	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -42,37 +42,35 @@ func (n *NormalParser) Content() string {
 
 func (n *NormalParser) _parse(token html.Token) string {
 	mdData := ""
-	mdTag := ""
-	newLine := false
-	switch token.Data {
-	case "li":
-		mdTag = "*"
-		newLine = true
-	case "h1":
-		mdTag = "#"
-		newLine = true
-	case "h2":
-		mdTag = "##"
-		newLine = true
-	case "h3":
-		mdTag = "###"
-		newLine = true
-	case "h4":
-		mdTag = "####"
-		newLine = true
-	case "h5":
-		mdTag = "#####"
-		newLine = true
-	case "h6":
-		mdTag = "######"
-		newLine = true
-	case "code":
-		mdTag = "```"
-	case "pre":
-		newLine = true
-	default:
-		mdTag = ""
-	}
+	//	switch token.Data {
+	//	case "li":
+	//		mdTag = "*"
+	//		newLine = true
+	//	case "h1":
+	//		mdTag = "#"
+	//		newLine = true
+	//	case "h2":
+	//		mdTag = "##"
+	//		newLine = true
+	//	case "h3":
+	//		mdTag = "###"
+	//		newLine = true
+	//	case "h4":
+	//		mdTag = "####"
+	//		newLine = true
+	//	case "h5":
+	//		mdTag = "#####"
+	//		newLine = true
+	//	case "h6":
+	//		mdTag = "######"
+	//		newLine = true
+	//	case "code":
+	//		mdTag = "```"
+	//	case "pre":
+	//		newLine = true
+	//	default:
+	//		mdTag = ""
+	//	}
 	for {
 		n.tokenizer.Next()
 		nextToken := n.tokenizer.Token()
@@ -82,13 +80,12 @@ func (n *NormalParser) _parse(token html.Token) string {
 		case html.StartTagToken:
 			mdData += n._parse(nextToken)
 		case html.EndTagToken:
-			line := ""
-			if newLine {
-				line = "\n"
+			fmt.Println(token.Data)
+			if printer, ok := Printers[token.Data]; ok {
+				return printer(mdData, token)
 			} else {
-				line = ""
+				return ""
 			}
-			return mdTag + " " + strings.TrimSpace(mdData) + " " + mdTag + line
 		}
 	}
 
