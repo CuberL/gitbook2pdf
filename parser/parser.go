@@ -6,19 +6,12 @@ import (
 	"golang.org/x/net/html"
 )
 
-type Parser interface {
-	Parse() error
-	Title() string
-	Content() string
+func NewSummaryParser(raw string) *SummaryParser {
+	return &SummaryParser{raw: raw, inChapter: false}
 }
 
-// get the parser
-func New(raw string, summary bool) Parser {
-	if !summary {
-		return &NormalParser{raw: raw}
-	} else {
-		return &SummaryParser{raw: raw, inChapter: false}
-	}
+func NewParser(raw string) *NormalParser {
+	return &NormalParser{raw: raw}
 }
 
 func parseAttr(attrs []html.Attribute) map[string]string {

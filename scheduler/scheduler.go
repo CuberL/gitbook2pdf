@@ -2,10 +2,11 @@ package scheduler
 
 import (
 	"fmt"
-	"gitbook2pdf/parser"
 	"io/ioutil"
 	"net/http"
 	"os"
+
+	"github.com/cuberl/gitbook2pdf/parser"
 )
 
 type Scheduler struct {
@@ -32,7 +33,7 @@ func (s *Scheduler) Start() {
 	if err != nil {
 		fmt.Printf("get summary failed: %s\n", err)
 	}
-	p := parser.New(string(summaryHtml), true)
+	p := parser.NewSummaryParser(string(summaryHtml))
 	err = p.Parse()
 	if err != nil {
 		fmt.Printf("parse summary failed: %s\n", err)
@@ -43,7 +44,7 @@ func (s *Scheduler) Start() {
 	}
 
 	// Get the links
-	urls := p.(*parser.SummaryParser).Urls
+	urls := p.Urls
 	for i := 0; i < s.maxWorker; i++ {
 		go s.fetch()
 	}
@@ -67,7 +68,7 @@ func (s *Scheduler) fetch() {
 		if err != nil {
 			fmt.Printf("goroutine dead: %s\n", err.Error())
 		}
-		p := parser.New(string(contentHtml), false)
+		p := parser.NewParser(string(contentHtml))
 		err = p.Parse()
 		if err != nil {
 			fmt.Printf("parse error: %s\n", err.Error())

@@ -2,7 +2,7 @@
 package main
 
 import (
-	"gitbook2pdf/scheduler"
+	"github.com/cuberl/gitbook2pdf/scheduler"
 )
 
 // The Application has these three parts:
