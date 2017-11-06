@@ -5,21 +5,25 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/cuberl/gitbook2pdf/parser"
 )
 
 type Scheduler struct {
-	urls      chan (string)
+	paths     chan (string)
 	maxWorker int
 	startUrl  string
+	storeDir  string
 }
 
-func New(maxWorker int, startUrl string) *Scheduler {
+func New(maxWorker int, startUrl string, storeDir string) *Scheduler {
 	return &Scheduler{
-		urls:      make(chan (string)),
+		paths:     make(chan (string)),
 		maxWorker: maxWorker,
 		startUrl:  startUrl,
+		storeDir:  storeDir,
 	}
 }
 
@@ -38,7 +42,7 @@ func (s *Scheduler) Start() {
 	if err != nil {
 		fmt.Printf("parse summary failed: %s\n", err)
 	}
-	err = ioutil.WriteFile("SUMMARY.md", []byte(p.Content()), os.ModeAppend)
+	err = ioutil.WriteFile("SUMMARY.md", []byte(p.Content()), 0666)
 	if err != nil {
 		fmt.Printf("save summary failed: %s\n", err)
 	}
@@ -49,16 +53,17 @@ func (s *Scheduler) Start() {
 		go s.fetch()
 	}
 	for _, u := range urls {
-		s.urls <- s.startUrl + "/" + u
+		s.paths <- u
 	}
-	close(s.urls)
+	close(s.paths)
 }
 
 func (s *Scheduler) fetch() {
-	for url := range s.urls {
-		if url == "" {
+	for path := range s.paths {
+		if path == "" {
 			return
 		}
+		url := s.startUrl + "/" + path
 		contentRaw, err := http.Get(url)
 		if err != nil {
 			fmt.Printf("get content failed: %s\n", err.Error())
@@ -73,6 +78,17 @@ func (s *Scheduler) fetch() {
 		if err != nil {
 			fmt.Printf("parse error: %s\n", err.Error())
 		}
-		//		fmt.Println(p.Content())
+		path = s.storeDir + "/" + path
+		baseDir := filepath.Dir(path)
+		fmt.Println(baseDir)
+		_, err = os.Stat(baseDir)
+		if err != nil {
+			err = os.MkdirAll(baseDir, 0777)
+			if err != nil {
+				fmt.Println("mkdir failed.")
+				continue
+			}
+		}
+		ioutil.WriteFile(strings.Replace(path, ".html", ".md", 1), []byte(p.Content()), 0666)
 	}
 }

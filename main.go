@@ -10,6 +10,6 @@ import (
 // Parser -- Convert a HTML page to Markdown file
 // Scheduler
 func main() {
-	s := scheduler.New(1, "http://localhost:4000")
+	s := scheduler.New(1, "http://localhost:4000", "./book")
 	s.Start()
 }

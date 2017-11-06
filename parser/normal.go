@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"fmt"
+	//	"fmt"
 	"strings"
 
 	"golang.org/x/net/html"
@@ -43,14 +43,33 @@ func (n *NormalParser) Content() string {
 func (n *NormalParser) _parse(token html.Token) string {
 	mdData := ""
 	mdTag := ""
+	newLine := false
 	switch token.Data {
 	case "li":
 		mdTag = "*"
-		fmt.Println("GOT CODE")
+		newLine = true
 	case "h1":
 		mdTag = "#"
+		newLine = true
+	case "h2":
+		mdTag = "##"
+		newLine = true
+	case "h3":
+		mdTag = "###"
+		newLine = true
+	case "h4":
+		mdTag = "####"
+		newLine = true
+	case "h5":
+		mdTag = "#####"
+		newLine = true
+	case "h6":
+		mdTag = "######"
+		newLine = true
 	case "code":
-		mdTag = "```\n"
+		mdTag = "```"
+	case "pre":
+		newLine = true
 	default:
 		mdTag = ""
 	}
@@ -63,7 +82,13 @@ func (n *NormalParser) _parse(token html.Token) string {
 		case html.StartTagToken:
 			mdData += n._parse(nextToken)
 		case html.EndTagToken:
-			return mdTag + " " + mdData + " " + mdTag
+			line := ""
+			if newLine {
+				line = "\n"
+			} else {
+				line = ""
+			}
+			return mdTag + " " + strings.TrimSpace(mdData) + " " + mdTag + line
 		}
 	}
 

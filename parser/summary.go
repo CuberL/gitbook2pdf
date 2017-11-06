@@ -56,6 +56,7 @@ func (n *SummaryParser) _parse(token html.Token, level int) string {
 		} else if token.Type == html.EndTagToken {
 			if token.Data == "li" {
 				result = fmt.Sprintf("%s*[%s](%s)\n", strings.Repeat("\t", level), text, dataPath) + result
+				n.Urls = append(n.Urls, dataPath)
 				return result
 			}
 		}
